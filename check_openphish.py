@@ -126,7 +126,7 @@ def get_parser():
     version = "1.0.0"
     parser.add_argument('--version', '-v', action='version', version=version)
     parser.add_argument('--redirect-addr', '-r', help='Address of the BLOCKED warning site. Default is SAM\'s', default=sam_url)
-    parser.add_argument('--num-threads', '-t', help='Number of running threads. Default is 5', default=5, type=int)
+    parser.add_argument('--num-threads', '-t', help='Number of running threads. Default is 2', default=2, type=int)
     parser.add_argument('--list-limit', '-l', help='URL list max size. Default is O (no limit)', default=0, type=int)
     parser.add_argument('--use-doh', '-d', action='store_true', help='Enable DOH for resolving site. This will test the blocking software\'s ability to protect users using DNS over TLS', default=False)
     parser.add_argument('--no-dns', '-xn', action='store_true', help='Disable DNS reputation test', default=False)
@@ -218,8 +218,14 @@ class RepCheck(threading.Thread):
                 print("[+] Not Blocked: {0}".format(url))
                 allowed_set.append(url)
                 return
+            
 
-            ip = res.raw._fp.fp.raw._sock.getpeername()[0]
+
+            try:
+                ip = res.raw._fp.fp.raw._sock.getpeername()[0]
+            except AttributeError:
+
+                ip = res.raw._fp.fp.raw._sock.socket.getpeername()[0]
 
             if  ip == redirect_addr:
                 print("[+] Blocked:     {0}".format(url))
